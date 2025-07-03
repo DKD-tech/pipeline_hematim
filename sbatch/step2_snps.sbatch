@@ -15,23 +15,37 @@ DO_PHASING=$6
 OUTDIR="results/${SAMPLE_NAME}/snps_clair3"
 MODEL_PATH="$HOME/local/bin/miniconda/envs/sv_env/bin/models/r1041_e82_400bps_sup_v500"
 
-# Activer conda
-echo " Activation de conda et de l'environnement Clair3..."
-#source $HOME/local/bin/miniconda/etc/profile.d/conda.sh
+# # Activer conda
+# echo " Activation de conda et de l'environnement Clair3..."
+# #source $HOME/local/bin/miniconda/etc/profile.d/conda.sh
 
-# Assure que conda est disponible
-if ! command -v conda &> /dev/null; then
-    echo "Chargement de conda..."
-    source "$HOME/local/bin/miniconda/etc/profile.d/conda.sh"
+# # Assure que conda est disponible
+# if ! command -v conda &> /dev/null; then
+#     echo "Chargement de conda..."
+#     source "$HOME/local/bin/miniconda/etc/profile.d/conda.sh"
+# fi
+
+# # Active l'environnement clair3 (sv_env)
+# conda activate sv_env
+
+# echo "Conda activé : $(which python)"
+# #source $HOME/tools/bio/config.sh
+# #conda activate "$CONDA_SV_ENV"
+
+if [[ -z "$PIPELINE_DIR" ]]; then
+	echo "❌ ERREUR: La variable PIPELINE_DIR n'est pas définie."
+	echo "Vérifiez que run_pipeline.sh a bien exporté PIPELINE_DIR."
+	exit 1
 fi
 
-# Active l'environnement clair3 (sv_env)
-conda activate sv_env
+# === Activer conda ===
+echo "Activation de conda et des environnements..."
+source $HOME/local/bin/miniconda/etc/profile.d/conda.sh
+echo "PIPELINE est : $PIPELINE_DIR"
+conda activate "$PIPELINE_DIR/.conda_envs/sv_env"
 
-echo "Conda activé : $(which python)"
-#source $HOME/tools/bio/config.sh
-#conda activate "$CONDA_SV_ENV"
-
+echo "Environnements activés :"
+conda info --envs
 
 
 # === Vérification des index BAM ===

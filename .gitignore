@@ -1,0 +1,60 @@
+# ==============================================
+# .gitignore pour Pipeline Bioinformatique
+# ==============================================
+
+# Environnements Conda (ne pas versionner)
+.conda_envs/
+conda_envs/
+**/conda_envs/
+miniconda*/
+
+# Logs et fichiers temporaires
+*.log
+setup.log
+logs/
+
+# Résultats et données de sortie
+results/
+
+# Python (essentiel pour scripts bioinfo)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# R (essentiel en bioinformatique)
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+
+# Jupyter Notebooks (analyses exploratoires)
+.ipynb_checkpoints
+
+# Système et éditeurs
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Conda general
+.conda/

@@ -24,13 +24,13 @@ def list_files(base_path, extensions=None):
     return sorted(files_list)
 # Configuration de la page
 st.set_page_config(
-    page_title="Pipeline Nanopore - UPJV",
-    page_icon="🧬",
+    page_title="Pipeline Hematim - UPJV",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-st.title("🧬 Pipeline de détection de variants Nanopore - UPJV")
+st.title(" Pipeline de détection de variants Hematim - UPJV")
 
 # Sidebar pour la configuration
 st.sidebar.header("Configuration")
@@ -100,7 +100,7 @@ def display_debug_info(returncode, stdout, stderr, command):
         st.error(f"❌ Erreur d'exécution (code: {returncode})")
 
 
-    with st.expander("🔍 Commande exécutée"):
+    with st.expander(" Commande exécutée"):
         st.code(" ".join(command) if isinstance(command, list) else command, language="bash")
 
 
@@ -140,398 +140,6 @@ def save_debug_log(sample_name, command, returncode, stdout, stderr):
 
 # Configuration de base
 
-# with st.sidebar:
-#     # Onglets pour nouvel échantillon ou modifier existant
-#     tab_config1, tab_config2 = st.tabs(["➕ Nouvel échantillon", "📝 Modifier existant"])
-    
-#     with tab_config1:
-#         st.markdown("**Créer un nouvel échantillon**")
-        
-#         # Nom de l'échantillon
-#         sample_name = st.text_input(
-#             "Nom de l'échantillon",
-#             value="",
-#             placeholder="Entrez le nom du nouvel échantillon",
-#             key="new_sample"
-#         )
-    
-#     with tab_config2:
-#         st.markdown("**Modifier un échantillon existant**")
-        
-#         # Liste des échantillons existants
-#         existing_samples = []
-#         results_dir = "results"
-#         if os.path.exists(results_dir):
-#             for item in os.listdir(results_dir):
-#                 sample_dir = os.path.join(results_dir, item)
-#                 if os.path.isdir(sample_dir):
-#                     config_file = os.path.join(sample_dir, f"config_{item}.txt")
-#                     if os.path.exists(config_file):
-#                         existing_samples.append(item)
-        
-#         if existing_samples:
-#             selected_sample = st.selectbox(
-#                 "Sélectionner un échantillon",
-#                 [""] + existing_samples,
-#                 help="Choisissez un échantillon existant à modifier"
-#             )
-            
-#             if selected_sample:
-#                 sample_name = selected_sample
-#                 # Charger la configuration existante
-#                 config = load_config(sample_name)
-#                 if config:
-#                     st.success(f"Configuration chargée pour {sample_name}")
-#                     st.session_state.config_loaded = True
-#                     # Pré-remplir les valeurs si disponibles dans la config
-#                     if 'reference' in config:
-#                         st.session_state.loaded_reference = config['reference']
-#                     if 'partition' in config:
-#                         st.session_state.loaded_partition = config['partition']
-#                     if 'threads' in config:
-#                         st.session_state.loaded_threads = int(config['threads'])
-#                 else:
-#                     st.session_state.config_loaded = False
-#             else:
-#                 sample_name = ""
-#         else:
-#             st.info("Aucun échantillon existant trouvé")
-#             sample_name = ""
-    
-#     # Mettre à jour l'état de session
-#     if sample_name and sample_name != st.session_state.get('sample_name', ''):
-#         st.session_state.sample_name = sample_name
-
-#     # Paramètres de configuration
-#     # Fichier de référence
-#     reference = st.text_input(
-#         "Fichier de référence", 
-#         value=st.session_state.get('loaded_reference', "/users/dkdiakite/mes_jobs/input/hg38.fa"),
-#         help="Chemin vers le génome de référence"
-#     )
-    
-#     # Partition SLURM
-#     partition = st.text_input(
-#         "Partition SLURM", 
-#         value=st.session_state.get('loaded_partition', "bigmem,bigmem-amd"),
-#         help="Partitions SLURM disponibles"
-#     )
-    
-#     # Nombre de threads avec contrôles + et -
-#     st.markdown("**Nombre de threads**")
-#     col_minus, col_input, col_plus = st.columns([1, 2, 1])
-    
-#     # Initialiser la valeur des threads
-#     if 'threads_value' not in st.session_state:
-#         st.session_state.threads_value = st.session_state.get('loaded_threads', 16)
-    
-#     with col_minus:
-#         if st.button("➖", key="minus_threads", help="Diminuer"):
-#             if st.session_state.threads_value > 1:
-#                 st.session_state.threads_value -= 1
-#                 st.rerun()
-    
-#     with col_input:
-#         threads = st.number_input(
-#             "threads",
-#             min_value=1,
-#             max_value=64,
-#             value=st.session_state.threads_value,
-#             label_visibility="collapsed"
-#         )
-#         st.session_state.threads_value = threads
-    
-#     with col_plus:
-#         if st.button("➕", key="plus_threads", help="Augmenter"):
-#             if st.session_state.threads_value < 64:
-#                 st.session_state.threads_value += 1
-#                 st.rerun()
-
-# with st.sidebar:
-#     # Onglets pour nouvel échantillon ou modifier existant
-#     tab_config1, tab_config2 = st.tabs(["➕ Nouvel échantillon", "📝 Modifier existant"])
-    
-#     # Initialiser sample_name dans session_state si pas présent
-#     if 'sample_name' not in st.session_state:
-#         st.session_state.sample_name = ""
-    
-#     with tab_config1:
-#         st.markdown("**Créer un nouvel échantillon**")
-        
-#         # Nom de l'échantillon avec callback
-#         sample_name_input = st.text_input(
-#             "Nom de l'échantillon",
-#             value=st.session_state.sample_name if st.session_state.get('current_tab') == 'new' else "",
-#             placeholder="Entrez le nom du nouvel échantillon",
-#             key="new_sample"
-#         )
-        
-#         # Mettre à jour l'état si changement détecté
-#         if sample_name_input != st.session_state.sample_name:
-#             st.session_state.sample_name = sample_name_input
-#             st.session_state.current_tab = 'new'
-#             st.session_state.config_loaded = False  # Reset config chargée
-#             # Nettoyer les valeurs chargées
-#             if 'loaded_reference' in st.session_state:
-#                 del st.session_state.loaded_reference
-#             if 'loaded_partition' in st.session_state:
-#                 del st.session_state.loaded_partition
-#             if 'loaded_threads' in st.session_state:
-#                 del st.session_state.loaded_threads
-#             st.rerun()  # Forcer le rafraîchissement
-    
-#     with tab_config2:
-#         st.markdown("**Modifier un échantillon existant**")
-        
-#         # Liste des échantillons existants
-#         existing_samples = []
-#         results_dir = "results"
-#         if os.path.exists(results_dir):
-#             for item in os.listdir(results_dir):
-#                 sample_dir = os.path.join(results_dir, item)
-#                 if os.path.isdir(sample_dir):
-#                     config_file = os.path.join(sample_dir, f"config_{item}.txt")
-#                     if os.path.exists(config_file):
-#                         existing_samples.append(item)
-        
-#         if existing_samples:
-#             # Déterminer l'index par défaut pour la selectbox
-#             default_index = 0
-#             if st.session_state.get('current_tab') == 'modify' and st.session_state.sample_name in existing_samples:
-#                 default_index = existing_samples.index(st.session_state.sample_name) + 1
-            
-#             selected_sample = st.selectbox(
-#                 "Sélectionner un échantillon",
-#                 [""] + existing_samples,
-#                 help="Choisissez un échantillon existant à modifier",
-#                 index=default_index
-#             )
-            
-#             if selected_sample:
-#                 # Mettre à jour seulement si c'est différent
-#                 if selected_sample != st.session_state.sample_name:
-#                     st.session_state.sample_name = selected_sample
-#                     st.session_state.current_tab = 'modify'
-#                     # Charger la configuration existante
-#                     config = load_config(selected_sample)
-#                     if config:
-#                         st.success(f"Configuration chargée pour {selected_sample}")
-#                         st.session_state.config_loaded = True
-#                         # Pré-remplir les valeurs si disponibles dans la config
-#                         if 'reference' in config:
-#                             st.session_state.loaded_reference = config['reference']
-#                         if 'partition' in config:
-#                             st.session_state.loaded_partition = config['partition']
-#                         if 'threads' in config:
-#                             st.session_state.loaded_threads = int(config['threads'])
-#                         if 'fastq_input' in config:
-#                             st.session_state.loaded_fastq = config['fastq_input']
-#                         st.rerun()  # Forcer le rafraîchissement
-#                     else:
-#                         st.session_state.config_loaded = False
-#                 elif st.session_state.get('current_tab') == 'modify':
-#                     # Si c'est le même échantillon et qu'on est déjà en mode modify, afficher le statut
-#                     if st.session_state.get('config_loaded'):
-#                         st.success(f"Configuration chargée pour {selected_sample}")
-#             else:
-#                 # Si rien n'est sélectionné, vider le nom d'échantillon uniquement si on était en mode modify
-#                 if st.session_state.get('current_tab') == 'modify':
-#                     st.session_state.sample_name = ""
-#                     st.session_state.config_loaded = False
-#                     # Nettoyer les valeurs chargées
-#                     for key in ['loaded_reference', 'loaded_partition', 'loaded_threads', 'loaded_fastq']:
-#                         if key in st.session_state:
-#                             del st.session_state[key]
-#         else:
-#             st.info("Aucun échantillon existant trouvé")
-#             if st.session_state.get('current_tab') == 'modify':
-#                 st.session_state.sample_name = ""
-#                 st.session_state.config_loaded = False
-
-#     # Récupérer le nom d'échantillon final
-#     sample_name = st.session_state.sample_name
-
-#     # Paramètres de configuration
-#     # Fichier de référence
-#     reference = st.text_input(
-#         "Fichier de référence", 
-#         value=st.session_state.get('loaded_reference', "/users/dkdiakite/mes_jobs/input/hg38.fa"),
-#         help="Chemin vers le génome de référence"
-#     )
-    
-#     # Partition SLURM
-#     partition = st.text_input(
-#         "Partition SLURM", 
-#         value=st.session_state.get('loaded_partition', "bigmem,bigmem-amd"),
-#         help="Partitions SLURM disponibles"
-#     )
-    
-#     # Nombre de threads avec contrôles + et -
-#     st.markdown("**Nombre de threads**")
-#     col_minus, col_input, col_plus = st.columns([1, 2, 1])
-    
-#     # Initialiser la valeur des threads
-#     if 'threads_value' not in st.session_state:
-#         st.session_state.threads_value = st.session_state.get('loaded_threads', 16)
-    
-#     with col_minus:
-#         if st.button("➖", key="minus_threads", help="Diminuer"):
-#             if st.session_state.threads_value > 1:
-#                 st.session_state.threads_value -= 1
-#                 st.rerun()
-    
-#     with col_input:
-#         threads = st.number_input(
-#             "threads",
-#             min_value=1,
-#             max_value=64,
-#             value=st.session_state.threads_value,
-#             label_visibility="collapsed"
-#         )
-#         st.session_state.threads_value = threads
-    
-#     with col_plus:
-#         if st.button("➕", key="plus_threads", help="Augmenter"):
-#             if st.session_state.threads_value < 64:
-#                 st.session_state.threads_value += 1
-#                 st.rerun()               
-
-# with st.sidebar:
-#     tab_new, tab_modify = st.tabs(["➕ Nouvel échantillon", "📝 Modifier existant"])
-
-
-#     if 'current_tab' not in st.session_state:
-#         st.session_state.current_tab = 'new'
-#     if 'sample_name' not in st.session_state:
-#         st.session_state.sample_name = ""
-
-
-#     with tab_new:
-#         st.markdown("**Créer un nouvel échantillon**")
-#         new_sample = st.text_input(
-#             "Nom de l'échantillon",
-#             value=st.session_state.sample_name if st.session_state.current_tab == 'new' else "",
-#             key="new_sample_input",
-#             placeholder="Entrez le nom du nouvel échantillon"
-#         )
-
-
-#         if new_sample != st.session_state.sample_name:
-#             st.session_state.sample_name = new_sample
-#             st.session_state.current_tab = 'new'
-#             st.session_state.config_loaded = False
-#             for key in ['loaded_reference', 'loaded_partition', 'loaded_threads', 'loaded_fastq']:
-#                 st.session_state.pop(key, None)
-
-
-#     with tab_modify:
-#         st.markdown("**Modifier un échantillon existant**")
-
-
-#         results_dir = "results"
-#         existing_samples = []
-#         if os.path.exists(results_dir):
-#             existing_samples = [
-#                 item for item in os.listdir(results_dir)
-#                 if os.path.isdir(os.path.join(results_dir, item))
-#                 and os.path.exists(os.path.join(results_dir, item, f"config_{item}.txt"))
-#             ]
-
-
-#         if existing_samples:
-#             default_index = 0
-#             if st.session_state.current_tab == 'modify' and st.session_state.sample_name in existing_samples:
-#                 default_index = existing_samples.index(st.session_state.sample_name) + 1
-
-
-#             selected_sample = st.selectbox(
-#                 "Sélectionner un échantillon",
-#                 [""] + existing_samples,
-#                 index=default_index
-#             )
-
-
-#             if selected_sample:
-#                 if selected_sample != st.session_state.sample_name or st.session_state.current_tab != 'modify':
-#                     st.session_state.sample_name = selected_sample
-#                     st.session_state.current_tab = 'modify'
-#                     config = load_config(selected_sample)
-#                     if config:
-#                         st.session_state.loaded_reference = config.get('reference', '')
-#                         st.session_state.loaded_partition = config.get('partition', '')
-#                         st.session_state.loaded_threads = config.get('threads', 16)
-#                         st.session_state.loaded_fastq = config.get('fastq_input', '')
-#                         st.session_state.config_loaded = True
-#                         st.success(f"Configuration chargée pour {selected_sample}")
-#                     else:
-#                         st.warning("Fichier de configuration non trouvé")
-#                         st.session_state.config_loaded = False
-#             else:
-#                 if st.session_state.current_tab == 'modify':
-#                     st.session_state.sample_name = ""
-#                     st.session_state.config_loaded = False
-#                     for key in ['loaded_reference', 'loaded_partition', 'loaded_threads', 'loaded_fastq']:
-#                         st.session_state.pop(key, None)
-#         else:
-#             st.info("Aucun échantillon existant trouvé")
-#             if st.session_state.current_tab == 'modify':
-#                 st.session_state.sample_name = ""
-#                 st.session_state.config_loaded = False
-
-
-#     # ------------------------------
-#     # Paramètres partagés
-#     # ------------------------------
-#     sample_name = st.session_state.sample_name
-
-
-#     st.markdown(f"### Échantillon sélectionné : `{sample_name}`")
-
-
-#     reference = st.text_input(
-#         "Fichier de référence",
-#         value=st.session_state.get('loaded_reference', "/users/dkdiakite/mes_jobs/input/hg38.fa"),
-#         help="Chemin vers le génome de référence"
-#     )
-
-
-#     partition = st.text_input(
-#         "Partition SLURM",
-#         value=st.session_state.get('loaded_partition', "bigmem,bigmem-amd"),
-#         help="Partitions SLURM disponibles"
-#     )
-
-
-#     st.markdown("**Nombre de threads**")
-#     col_minus, col_input, col_plus = st.columns([1, 2, 1])
-
-
-#     if 'threads_value' not in st.session_state:
-#         st.session_state.threads_value = st.session_state.get('loaded_threads', 16)
-
-
-#     with col_minus:
-#         if st.button("➖", key="minus_threads"):
-#             if st.session_state.threads_value > 1:
-#                 st.session_state.threads_value -= 1
-
-
-#     with col_input:
-#         threads = st.number_input(
-#             "threads",
-#             min_value=1,
-#             max_value=64,
-#             value=st.session_state.threads_value,
-#             label_visibility="collapsed"
-#         )
-#         st.session_state.threads_value = threads
-
-
-#     with col_plus:
-#         if st.button("➕", key="plus_threads"):
-#             if st.session_state.threads_value < 64:
-#                 st.session_state.threads_value += 1
-
 with st.sidebar:
 
     # Choix entre créer un nouvel échantillon ou modifier un existant
@@ -547,7 +155,7 @@ with st.sidebar:
         st.session_state.sample_name = ""
 
 
-    # 🆕 Mode : Nouvel échantillon
+    #  Mode : Nouvel échantillon
     if choix == "➕ Nouvel échantillon":
         st.markdown("**Créer un nouvel échantillon**")
 
@@ -567,7 +175,7 @@ with st.sidebar:
                 st.session_state.pop(key, None)
             
 
-    # 📝 Mode : Modifier un échantillon existant
+    #  Mode : Modifier un échantillon existant
     elif choix == "📝 Modifier existant":
         st.markdown("**Modifier un échantillon existant**")
 
@@ -608,7 +216,7 @@ with st.sidebar:
             if selected_sample:
                 if selected_sample != st.session_state.sample_name:
                     st.session_state.sample_name = selected_sample
-                    config = load_config(selected_sample)  # ⚠️ Adapter à ta fonction
+                    config = load_config(selected_sample)  #  Adapter à ta fonction
                     if config:
                         st.session_state.loaded_reference = config.get('reference', '')
                         st.session_state.loaded_partition = config.get('partition', '')
@@ -689,7 +297,7 @@ with st.sidebar:
 
 
 # Onglets principaux
-tab1, tab2, tab3, tab4 = st.tabs(["🚀 Pipeline Complet", "⚙️ Étapes Manuelles", "📊 Monitoring", "📈 Résultats et Suivi"])
+tab1, tab2, tab3, tab4 = st.tabs([" Pipeline Complet", " Étapes Manuelles", " Monitoring", " Résultats et Suivi"])
 
 with tab1:
     st.header("Lancement du Pipeline Complet")
@@ -714,7 +322,7 @@ with tab1:
             
             # Informations sur le dossier source
             #st.info(f"📂 **Dossier source:** `{base_folder_fastq}`")
-            #st.info(f"📊 **{len(fastq_files)} fichiers FASTQ** détectés")
+            #st.info(f" **{len(fastq_files)} fichiers FASTQ** détectés")
             
             # Checkbox pour tout sélectionner
             select_all = st.checkbox(
@@ -749,7 +357,7 @@ with tab1:
                     ]
                    
                 selected_fastq_rel_list = st.multiselect(
-                    "🎯 Choisissez un ou plusieurs fichiers FASTQ à aligner :",
+                    " Choisissez un ou plusieurs fichiers FASTQ à aligner :",
                     fastq_files,
                     default=default_selection,
                     help="Utilisez Ctrl+clic pour sélectionner plusieurs fichiers"
@@ -809,7 +417,7 @@ with tab1:
 
             
             do_phasing = st.checkbox(
-                "🧬 Effectuer le phasage avec WhatsHap",
+                " Effectuer le phasage avec WhatsHap",
                 help="Active le phasage des variants détectés"
             )
             
@@ -841,7 +449,7 @@ with tab1:
         
         # Section Lancement
         st.markdown("---")
-        #st.subheader("🚀 Lancement")
+        #st.subheader(" Lancement")
         
         # Vérifications avant lancement
         can_launch = True
@@ -872,7 +480,7 @@ with tab1:
         # Remplacez la section de lancement dans tab1 par ce code amélioré :
 
         # Bouton de lancement
-        if st.button("🚀 Lancer le Pipeline Complet", type="primary", disabled=not can_launch):
+        if st.button(" Lancer le Pipeline Complet", type="primary", disabled=not can_launch):
             config = {
                 "sample_name": sample_name,
                 "reference": reference,
@@ -906,11 +514,11 @@ with tab1:
                     command_str = " ".join(cmd)
                     returncode, stdout, stderr = run_pipeline_command(command_str)
                 
-                # 🔍 Affichage détaillé des résultats (comme dans tab2)
-                st.markdown("### 🔍 Résultats de l'exécution")
+                #  Affichage détaillé des résultats (comme dans tab2)
+                st.markdown("###  Résultats de l'exécution")
                 
                 # Affichage de la commande exécutée
-                with st.expander("🖥️ Commande exécutée", expanded=False):
+                with st.expander(" Commande exécutée", expanded=False):
                     st.code(command_str, language="bash")
                 
                 # Affichage des résultats
@@ -923,7 +531,7 @@ with tab1:
                         st.error(f"❌ Erreur lors de la soumission (Code: {returncode})")
                 
                 with col_result2:
-                    st.info(f"📊 Code de retour: {returncode}")
+                    st.info(f" Code de retour: {returncode}")
                 
                 # Affichage de la sortie standard
                 if stdout:
@@ -983,7 +591,7 @@ with tab1:
                         else:
                             st.success(f"✅ Fichier BED trouvé: {os.path.basename(bed_file)}")
                 
-                # 💾 Sauvegarde du log (comme dans tab2)
+                #  Sauvegarde du log (comme dans tab2)
                 save_debug_log(sample_name, command_str, returncode, stdout, stderr)
                 
                 # Sauvegarde de la configuration seulement en cas de succès
@@ -1132,7 +740,7 @@ with tab2:
             # Paramètres pour la méthylation (étape 5)
             if needs_modified_bam:
                 modified_bam = st.text_input(
-                    "🧬 BAM modifié (pour méthylation) :",
+                    " BAM modifié (pour méthylation) :",
                     help="Fichier BAM pré-annoté avec modkit pour l'analyse de méthylation",
                     placeholder="/chemin/vers/votre/fichier_modifie.bam"
                 )
@@ -1156,11 +764,11 @@ with tab2:
                 # Phasage disponible seulement si SNPs sélectionnés
                 if "2" in selected_steps:
                     do_phasing_manual = st.checkbox(
-                        "🧬 Effectuer le phasage (WhatsHap)",
+                        " Effectuer le phasage (WhatsHap)",
                         help="Active le phasage des variants SNPs détectés"
                     )
                 # else:
-                #     st.text("🧬 Phasage (nécessite l'étape SNPs)")
+                #     st.text(" Phasage (nécessite l'étape SNPs)")
             
             # Validation avant exécution
             st.markdown("---")
@@ -1211,7 +819,7 @@ with tab2:
                         st.write("**Phasage:** Activé")
             
             # Bouton d'exécution
-            if st.button("▶️ Exécuter les étapes sélectionnées", type="primary", disabled=not can_execute):
+            if st.button("▶ Exécuter les étapes sélectionnées", type="primary", disabled=not can_execute):
                 # Construire la commande
                 cmd = [
                     "bash", "run_pipeline.sh", "--non-interactive",
@@ -1252,17 +860,17 @@ with tab2:
                     cmd.append("--phase")
 
 
-                # 🔥 Exécution robuste
+                #  Exécution robuste
                 with st.spinner("⏳ Soumission des étapes en cours..."):
                     command_str = " ".join(cmd)
                     returncode, stdout, stderr = run_pipeline_command(command_str)
 
 
-                # 🔍 Affichage des résultats
+                #  Affichage des résultats
                 display_debug_info(returncode, stdout, stderr, cmd)
 
 
-                # 💾 Sauvegarde du log
+                #  Sauvegarde du log
                 save_debug_log(sample_name, command_str, returncode, stdout, stderr)
 
 
@@ -1389,288 +997,20 @@ with tab3:
             st.warning("Le dossier 'logs' n'existe pas. Vérifiez que vos jobs génèrent bien des logs dans ce répertoire.")
 
 
-# with tab4:
-#     st.header("Aide et Documentation")
-    
-#     st.markdown("""
-#     ## Pipeline de détection de variants Nanopore
-    
-#     Ce pipeline intègre plusieurs outils pour l'analyse de données Nanopore :
-    
-#     ### Étapes du pipeline :
-    
-#     1. **Alignement** : minimap2 + samtools
-#        - Aligne les reads Nanopore sur le génome de référence
-#        - Produit un fichier BAM indexé
-    
-#     2. **Détection de SNPs** : Clair3 + WhatsHap (optionnel)
-#        - Détecte les variants ponctuels et petites indels
-#        - Phasage optionnel avec WhatsHap
-    
-#     3. **Détection de SVs** : Sniffles2 + cuteSV + SURVIVOR
-#        - Détecte les variants structuraux
-#        - Fusion des résultats avec SURVIVOR
-    
-#     4. **CNV** : CNVkit
-#        - Détection des variations du nombre de copies
-    
-#     5. **Méthylation** : modkit + methylArtist
-#        - Analyse de la méthylation de l'ADN
-#        - Nécessite un BAM pré-annoté avec modkit
-    
-#     6. **Contrôle qualité** : samtools stats + NanoStat + MultiQC
-#        - Évaluation de la qualité des données et de l'alignement
-    
-#     7. **Annotation** : VEP + Annovar
-#        - Annotation fonctionnelle des variants détectés
-    
-#     ### Dépendances entre étapes :
-#     - Les étapes 2, 3, 6 dépendent de l'étape 1 (Alignement)
-#     - L'étape 4 peut dépendre de l'étape 3 (SVs)
-#     - L'étape 7 dépend de l'étape 2 (SNPs)
-    
-#     ### Configuration requise :
-#     - Cluster SLURM avec partitions configurées
-#     - Outils bioinformatiques installés (minimap2, samtools, Clair3, etc.)
-#     - Génome de référence (hg38 par défaut)
-#     """)
-
-# Ajoutez ceci après votre tab3 (Monitoring des Jobs)
-# with tab4:
-#     st.header("📈 Résultats et Suivi")
-    
-#     # Sélection d'échantillon avec info contextuelle
-#     if 'sample_name' in locals() and sample_name:
-#         selected_sample = sample_name
-#         st.info(f"🔍 Affichage des résultats pour l'échantillon sélectionné : **{sample_name}**")
-#     else:
-#         # Si pas d'échantillon sélectionné, permettre la sélection
-#         results_dir = Path("results")
-#         if results_dir.exists():
-#             available_samples = [d.name for d in results_dir.iterdir() if d.is_dir()]
-#             if available_samples:
-#                 selected_sample = st.selectbox("📋 Sélectionner un échantillon", available_samples)
-#             else:
-#                 st.warning("Aucun résultat d'échantillon trouvé dans le dossier 'results/'")
-#                 selected_sample = None
-#         else:
-#             st.warning("Dossier 'results/' non trouvé")
-#             selected_sample = None
-    
-#     if selected_sample:
-#         sample_dir = Path("results") / selected_sample
-        
-#         # Sous-onglets pour organiser les résultats
-#         sub_tab1, sub_tab2, sub_tab3, sub_tab4 = st.tabs([
-#             "🎯 État d'avancement", 
-#             "📁 Fichiers de sortie", 
-#             "📊 Métriques QC", 
-#             "📋 Rapports"
-#         ])
-        
-#         with sub_tab1:
-#             st.subheader(f"État d'avancement - {selected_sample}")
-            
-#             # Définition des étapes avec informations détaillées
-#             steps_info = {
-#                 "🧬 Alignement": {
-#                     "files": [f"{selected_sample}.bam", f"{selected_sample}.bam.bai"],
-#                     "path": "mapping",
-#                     "description": "Alignement des reads sur le génome de référence"
-#                 },
-#                 "🔍 Appel de variants (SNPs/INDELs)": {
-#                     "files": ["merge_output.vcf.gz", "merge_output.vcf.gz.tbi"],
-#                     "path": "snps_clair3",
-#                     "description": "Détection des variants courts avec Clair3"
-#                 },
-#                 "📏 Variants structuraux (SVs)": {
-#                     "files": ["merged_sv.vcf", "merged_sv.vcf.gz"],
-#                     "path": "svs",
-#                     "description": "Détection des variants structuraux"
-#                 },
-#                 "📈 Variations du nombre de copies (CNVs)": {
-#                     "files": [f"{selected_sample}.cns", f"{selected_sample}.cnr"],
-#                     "path": "cnvkit",
-#                     "description": "Analyse des variations du nombre de copies"
-#                 },
-#                 "✅ Contrôle qualité": {
-#                     "files": ["multiqc_report.html", "multiqc_data/"],
-#                     "path": "qc",
-#                     "description": "Rapport de qualité global"
-#                 },
-#                 "🏷️ Annotation": {
-#                     "files": ["annotated.vcf", "annotated.html"],
-#                     "path": "annotation",
-#                     "description": "Annotation fonctionnelle des variants"
-#                 }
-#             }
-            
-#             # Affichage en colonnes pour un meilleur layout
-#             col1, col2 = st.columns([2, 1])
-            
-#             completed_steps = 0
-#             total_steps = len(steps_info)
-            
-#             for step_name, step_info in steps_info.items():
-#                 step_path = sample_dir / step_info["path"]
-#                 files_found = []
-                
-#                 if step_path.exists():
-#                     for file_pattern in step_info["files"]:
-#                         if "/" in file_pattern:  # C'est un dossier
-#                             if (step_path / file_pattern.split("/")[0]).exists():
-#                                 files_found.append(file_pattern)
-#                         else:  # C'est un fichier
-#                             if (step_path / file_pattern).exists():
-#                                 files_found.append(file_pattern)
-                
-#                 with col1:
-#                     if files_found:
-#                         st.success(f"✅ **{step_name}**")
-#                         st.caption(step_info["description"])
-#                         with st.expander(f"Fichiers générés ({len(files_found)})"):
-#                             for file_name in files_found:
-#                                 st.text(f"📄 {file_name}")
-#                         completed_steps += 1
-#                     else:
-#                         st.error(f"❌ **{step_name}**")
-#                         st.caption(step_info["description"])
-#                         st.caption("⏳ En attente ou en cours...")
-            
-#             # Barre de progression globale
-#             with col2:
-#                 progress = completed_steps / total_steps
-#                 st.metric("Progression globale", f"{completed_steps}/{total_steps}")
-#                 st.progress(progress)
-                
-#                 if progress == 1.0:
-#                     st.balloons()
-#                     st.success("🎉 Pipeline terminé !")
-#                 elif progress > 0:
-#                     st.info(f"⚡ {completed_steps} étapes terminées")
-#                 else:
-#                     st.warning("🔄 Pipeline en cours de démarrage")
-        
-#         with sub_tab2:
-#             st.subheader("📁 Fichiers de sortie disponibles")
-            
-#             if sample_dir.exists():
-#                 # Types de fichiers importants avec descriptions
-#                 file_types = {
-#                     "*.vcf*": "🧬 Fichiers de variants",
-#                     "*.bam": "📊 Fichiers d'alignement",
-#                     "*.html": "📋 Rapports HTML",
-#                     "*.pdf": "📄 Rapports PDF",
-#                     "*.cns": "📈 Données CNV",
-#                     "*.png": "📸 Graphiques"
-#                 }
-                
-#                 all_files = []
-#                 for pattern, description in file_types.items():
-#                     files = list(sample_dir.rglob(pattern))
-#                     if files:
-#                         st.write(f"**{description}**")
-#                         for file_path in files[:10]:  # Limiter l'affichage
-#                             file_size = file_path.stat().st_size / (1024 * 1024)  # MB
-#                             file_date = datetime.fromtimestamp(file_path.stat().st_mtime)
-                            
-#                             col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
-#                             with col1:
-#                                 st.text(f"📄 {file_path.name}")
-#                             with col2:
-#                                 st.text(f"{file_size:.1f} MB")
-#                             with col3:
-#                                 st.text(file_date.strftime("%H:%M"))
-#                             with col4:
-#                                 if st.button("⬇️", key=f"download_{file_path.name}"):
-#                                     try:
-#                                         with open(file_path, 'rb') as f:
-#                                             st.download_button(
-#                                                 label="Télécharger",
-#                                                 data=f.read(),
-#                                                 file_name=file_path.name,
-#                                                 key=f"dl_{file_path.name}"
-#                                             )
-#                                     except Exception as e:
-#                                         st.error(f"Erreur de téléchargement: {e}")
-#                         st.divider()
-#             else:
-#                 st.warning("📂 Répertoire de résultats non trouvé")
-        
-#         with sub_tab3:
-#             st.subheader("📊 Métriques de qualité")
-            
-#             # Recherche de fichiers de métriques
-#             qc_files = {
-#                 "MultiQC": sample_dir / "qc" / "multiqc_report.html",
-#                 "NanoPlot": sample_dir / "qc" / "NanoPlot-report.html", 
-#                 "FastQC": sample_dir / "qc" / "fastqc_report.html"
-#             }
-            
-#             metrics_found = False
-#             for qc_name, qc_path in qc_files.items():
-#                 if qc_path.exists():
-#                     metrics_found = True
-#                     col1, col2 = st.columns([3, 1])
-#                     with col1:
-#                         st.success(f"✅ Rapport {qc_name} disponible")
-#                     with col2:
-#                         if st.button(f"👁️ Voir", key=f"view_{qc_name}"):
-#                             st.info(f"Ouverture du rapport {qc_name}...")
-            
-#             if not metrics_found:
-#                 st.info("📊 Aucun rapport de qualité trouvé pour cet échantillon")
-#                 st.caption("Les rapports seront disponibles une fois l'étape QC terminée")
-        
-#         with sub_tab4:
-#             st.subheader("📋 Rapports détaillés")
-            
-#             # Boutons pour générer des rapports personnalisés
-#             col1, col2, col3 = st.columns(3)
-            
-#             with col1:
-#                 if st.button("📊 Rapport de variants"):
-#                     st.info("🔄 Génération du rapport de variants en cours...")
-#                     # Ici vous pourriez appeler une fonction pour générer le rapport
-            
-#             with col2:
-#                 if st.button("📈 Rapport CNV"):
-#                     st.info("🔄 Génération du rapport CNV en cours...")
-            
-#             with col3:
-#                 if st.button("🧬 Rapport complet"):
-#                     st.info("🔄 Génération du rapport complet en cours...")
-            
-#             st.divider()
-            
-#             # Espace pour afficher des visualisations
-#             st.subheader("📈 Visualisations")
-            
-#             # Placeholder pour des graphiques
-#             if st.checkbox("Afficher les statistiques d'alignement"):
-#                 # Ici vous pourriez ajouter des graphiques avec matplotlib/plotly
-#                 st.info("📊 Graphiques d'alignement à implémenter")
-            
-#             if st.checkbox("Afficher la distribution des variants"):
-#                 st.info("📊 Distribution des variants à implémenter")
-    
-#     else:
-#         st.info("👆 Sélectionnez un échantillon pour voir ses résultats")
-
 with tab4:
-    st.header("📈 Résultats et Suivi")
+    st.header(" Résultats et Suivi")
     
     # Sélection d'échantillon avec info contextuelle
     if 'sample_name' in locals() and sample_name:
         selected_sample = sample_name
-        st.info(f"🔍 Affichage des résultats pour l'échantillon sélectionné : **{sample_name}**")
+        st.info(f" Affichage des résultats pour l'échantillon sélectionné : **{sample_name}**")
     else:
         # Si pas d'échantillon sélectionné, permettre la sélection
         results_dir = Path("results")
         if results_dir.exists():
             available_samples = [d.name for d in results_dir.iterdir() if d.is_dir()]
             if available_samples:
-                selected_sample = st.selectbox("📋 Sélectionner un échantillon", available_samples)
+                selected_sample = st.selectbox(" Sélectionner un échantillon", available_samples)
             else:
                 st.warning("Aucun résultat d'échantillon trouvé dans le dossier 'results/'")
                 selected_sample = None
@@ -1683,9 +1023,9 @@ with tab4:
         
         # Sous-onglets pour organiser les résultats
         sub_tab1, sub_tab2, sub_tab3, sub_tab4 = st.tabs([
-            "🎯 État d'avancement", 
+            " État d'avancement", 
             "📁 Fichiers de sortie", 
-            "📊 Métriques QC", 
+            " Métriques QC", 
             "📋 Rapports"
         ])
         
@@ -1694,32 +1034,32 @@ with tab4:
             
             # Définition des étapes avec informations détaillées
             steps_info = {
-                "🧬 Alignement": {
+                " Alignement": {
                     "files": [f"{selected_sample}.bam", f"{selected_sample}.bam.bai"],
                     "path": "mapping",
                     "description": "Alignement des reads sur le génome de référence"
                 },
-                "🔍 Appel de variants (SNPs/INDELs)": {
+                " Appel de variants (SNPs/INDELs)": {
                     "files": ["merge_output.vcf.gz", "merge_output.vcf.gz.tbi"],
                     "path": "snps_clair3",
                     "description": "Détection des variants courts avec Clair3"
                 },
-                "📏 Variants structuraux (SVs)": {
+                " Variants structuraux (SVs)": {
                     "files": ["*.vcf", "*.vcf.gz", "*.sv", "*.bed"],
                     "path": "svs",
                     "description": "Détection des variants structuraux"
                 },
-                "📈 Variations du nombre de copies (CNVs)": {
+                " Variations du nombre de copies (CNVs)": {
                     "files": [f"{selected_sample}.cns", f"{selected_sample}.cnr"],
                     "path": "cnvkit",
                     "description": "Analyse des variations du nombre de copies"
                 },
-                "✅ Contrôle qualité": {
+                " Contrôle qualité": {
                     "files": ["multiqc_report.html", "multiqc_data"],
                     "path": "qc",
                     "description": "Rapport de qualité global"
                 },
-                "🏷️ Annotation": {
+                " Annotation": {
                     "files": ["*_annotation_vep.tsv", "*_annovar_pileup.hg38_multianno.vcf", "*_annovar_pileup.hg38_multianno.txt"],
                     "path": "annotation",
                     "description": "Annotation fonctionnelle des variants"
@@ -1761,7 +1101,7 @@ with tab4:
                     else:
                         st.error(f"❌ **{step_name}**")
                         st.caption(step_info["description"])
-                        st.caption("⏳ En attente ou en cours...")
+                        st.caption(" En attente ou en cours...")
                         
                         # Debug : afficher le chemin recherché
                         if st.checkbox(f"Debug {step_name}", key=f"debug_{step_name}"):
@@ -1780,9 +1120,9 @@ with tab4:
                 
                 if progress == 1.0:
                     st.balloons()
-                    st.success("🎉 Pipeline terminé !")
+                    st.success(" Pipeline terminé !")
                 elif progress > 0:
-                    st.info(f"⚡ {completed_steps} étapes terminées")
+                    st.info(f" {completed_steps} étapes terminées")
                 else:
                     st.warning("🔄 Pipeline en cours de démarrage")
         
@@ -1792,12 +1132,12 @@ with tab4:
             if sample_dir.exists():
                 # Types de fichiers importants avec descriptions
                 file_types = {
-                    "*.vcf*": "🧬 Fichiers de variants",
-                    "*.bam": "📊 Fichiers d'alignement",
+                    "*.vcf*": " Fichiers de variants",
+                    "*.bam": " Fichiers d'alignement",
                     "*.html": "📋 Rapports HTML",
                     "*.pdf": "📄 Rapports PDF",
-                    "*.cns": "📈 Données CNV",
-                    "*.png": "📸 Graphiques"
+                    "*.cns": " Données CNV",
+                    "*.png": " Graphiques"
                 }
                 
                 all_files = []
@@ -1833,7 +1173,7 @@ with tab4:
                 st.warning("📂 Répertoire de résultats non trouvé")
         
         with sub_tab3:
-            st.subheader("📊 Métriques de qualité")
+            st.subheader(" Métriques de qualité")
             
             # Recherche de fichiers de métriques
             qc_files = {
@@ -1850,11 +1190,11 @@ with tab4:
                     with col1:
                         st.success(f"✅ Rapport {qc_name} disponible")
                     with col2:
-                        if st.button(f"👁️ Voir", key=f"view_{qc_name}"):
+                        if st.button(f" Voir", key=f"view_{qc_name}"):
                             st.info(f"Ouverture du rapport {qc_name}...")
             
             if not metrics_found:
-                st.info("📊 Aucun rapport de qualité trouvé pour cet échantillon")
+                st.info(" Aucun rapport de qualité trouvé pour cet échantillon")
                 st.caption("Les rapports seront disponibles une fois l'étape QC terminée")
         
         with sub_tab4:
@@ -1864,33 +1204,33 @@ with tab4:
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                if st.button("📊 Rapport de variants"):
+                if st.button(" Rapport de variants"):
                     st.info("🔄 Génération du rapport de variants en cours...")
                     # Ici vous pourriez appeler une fonction pour générer le rapport
             
             with col2:
-                if st.button("📈 Rapport CNV"):
+                if st.button(" Rapport CNV"):
                     st.info("🔄 Génération du rapport CNV en cours...")
             
             with col3:
-                if st.button("🧬 Rapport complet"):
+                if st.button(" Rapport complet"):
                     st.info("🔄 Génération du rapport complet en cours...")
             
             st.divider()
             
             # Espace pour afficher des visualisations
-            st.subheader("📈 Visualisations")
+            st.subheader(" Visualisations")
             
             # Placeholder pour des graphiques
             if st.checkbox("Afficher les statistiques d'alignement"):
                 # Ici vous pourriez ajouter des graphiques avec matplotlib/plotly
-                st.info("📊 Graphiques d'alignement à implémenter")
+                st.info(" Graphiques d'alignement à implémenter")
             
             if st.checkbox("Afficher la distribution des variants"):
-                st.info("📊 Distribution des variants à implémenter")
+                st.info(" Distribution des variants à implémenter")
     
     else:
-        st.info("👆 Sélectionnez un échantillon pour voir ses résultats")
+        st.info(" Sélectionnez un échantillon pour voir ses résultats")
 
 # Footer
 st.markdown("---")

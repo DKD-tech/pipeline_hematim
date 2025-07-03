@@ -14,11 +14,31 @@ BED_FILE=$5
 OUTDIR="results/${SAMPLE_NAME}/svs"
 mkdir -p "$OUTDIR"
 
+# # === Activer conda ===
+# echo " Activation de conda et de l'environnement sv_env..."
+# source $HOME/local/bin/miniconda/etc/profile.d/conda.sh
+# conda activate sv_env
+# conda activate sv_sniff
+
+# Récupérer le répertoire du pipeline
+# === Vérification que PIPELINE_DIR est bien défini ===
+if [[ -z "$PIPELINE_DIR" ]]; then
+	echo "❌ ERREUR: La variable PIPELINE_DIR n'est pas définie."
+	echo "Vérifiez que run_pipeline.sh a bien exporté PIPELINE_DIR."
+	exit 1
+fi
+
 # === Activer conda ===
-echo " Activation de conda et de l'environnement sv_env..."
+echo "Activation de conda et des environnements..."
 source $HOME/local/bin/miniconda/etc/profile.d/conda.sh
-conda activate sv_env
-conda activate sv_sniff
+echo "PIPELINE est : $PIPELINE_DIR"
+conda activate "$PIPELINE_DIR/.conda_envs/sv_env"
+conda activate "$PIPELINE_DIR/.conda_envs/sv_sniff"
+
+echo "Environnements activés :"
+conda info --envs
+
+
 #source $HOME/tools/bio/config.sh
 #conda activate "$CONDA_SV_ENV"
 #conda activate "$CONDA_SNIFF_ENV"

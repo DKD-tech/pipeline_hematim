@@ -13,10 +13,24 @@ CNV_BAM=$5          # Fichier BAM mappé
 OUTDIR="results/${SAMPLE_NAME}/cnvkit"
 mkdir -p "$OUTDIR"
 
-# === Chargement de l’environnement conda ===
-source $HOME/local/bin/miniconda/etc/profile.d/conda.sh
-conda activate cnvkit_env
+# # === Chargement de l’environnement conda ===
+# source $HOME/local/bin/miniconda/etc/profile.d/conda.sh
+# conda activate cnvkit_env
 
+if [[ -z "$PIPELINE_DIR" ]]; then
+	echo "❌ ERREUR: La variable PIPELINE_DIR n'est pas définie."
+	echo "Vérifiez que run_pipeline.sh a bien exporté PIPELINE_DIR."
+	exit 1
+fi
+
+# === Activer conda ===
+echo "Activation de conda et des environnements..."
+source $HOME/local/bin/miniconda/etc/profile.d/conda.sh
+echo "PIPELINE est : $PIPELINE_DIR"
+conda activate "$PIPELINE_DIR/.conda_envs/cnvkit_env"
+
+echo "Environnements activés :"
+conda info --envs
 
 # === Vérifications ===
 if [[ ! -f "$CNV_BAM" ]]; then

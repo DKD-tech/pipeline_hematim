@@ -1,12 +1,27 @@
 #!/bin/bash
-#SBATCH --job-name=align
-#SBATCH --time=5-06:00:00
+#SBATCH --job-name=align_test
+#SBATCH --time=2-06:00:00
 #SBATCH --cpus-per-task=20
-#SBATCH --array=1-1%5  # Limite à 5 jobs simultanés maximum
+#SBATCH --array=1-1%5
 
 # === Initialisation environnement ===
-export PATH=$HOME/bin/minimap2-2.24_x64-linux:$PATH
-export PATH=$HOME/bin/samtools/bin:$PATH
+# export PATH=$HOME/bin/minimap2-2.24_x64-linux:$PATH
+# export PATH=$HOME/bin/samtools/bin:$PATH
+
+if [[ -z "$PIPELINE_DIR" ]]; then
+	echo "❌ ERREUR: La variable PIPELINE_DIR n'est pas définie."
+	echo "Vérifiez que run_pipeline.sh a bien exporté PIPELINE_DIR."
+	exit 1
+fi
+
+# === Activer conda ===
+echo "Activation de conda et des environnements..."
+source $HOME/local/bin/miniconda/etc/profile.d/conda.sh
+echo "PIPELINE est : $PIPELINE_DIR"
+conda activate "$PIPELINE_DIR/.conda_envs/sv_env"
+
+echo "Environnements activés :"
+conda info --envs
 
 # === Paramètres d'entrée ===
 SAMPLE_NAME=$1

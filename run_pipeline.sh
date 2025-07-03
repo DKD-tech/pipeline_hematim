@@ -1,83 +1,7 @@
 # #!/bin/bash
 # exec > >(tee -a run_pipeline_debug.log) 2>&1
 # set -x
-
-# Configuration
-PIPELINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENVS_DIR="${PIPELINE_DIR}/envs"
-REQUIRED_ENVS=("sv_env" "sv_sniff" "cnvkittenv")
-
-# Couleurs pour l'affichage
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-echo -e "${BLUE} Démarrage du pipeline ${NC}"
-echo "================================================"
-
-# Fonction : Vérifier si conda est installé
-check_conda() {
-    if ! command -v conda &> /dev/null; then
-        echo -e "${RED} ERREUR : conda n'est pas installé ou pas dans le PATH${NC}"
-        echo "   Veuillez installer Miniconda/Anaconda et réessayer"
-        exit 1
-    fi
-    echo -e "${GREEN} conda détecté${NC}"
-}
-
-# Fonction : Vérifier si un environnement existe
-env_exists() {
-    conda env list | grep -q "^$1 "
-}
-
-# Fonction : Installer un environnement
-install_env() {
-    local env_name=$1
-    local yml_file="${ENVS_DIR}/${env_name}.yml"
-    
-    echo -e "${YELLOW} Installation de l'environnement ${env_name}...${NC}"
-    
-    if conda env create -f "$yml_file" --quiet; then
-        echo -e "${GREEN} ${env_name} installé avec succès${NC}"
-        return 0
-    else
-        echo -e "${RED} Échec de l'installation de ${env_name}${NC}"
-        return 1
-    fi
-}
-
-# Fonction : Setup automatique des environnements
-setup_environments() {
-    echo -e "${BLUE}🔧 Vérification des environnements...${NC}"
-    
-    local missing_envs=()
-    
-    # Vérifier quels environnements manquent
-    for env in "${REQUIRED_ENVS[@]}"; do
-        if env_exists "$env"; then
-            echo -e "${GREEN} ${env} : OK${NC}"
-        else
-            echo -e "${YELLOW}  ${env} : manquant${NC}"
-            missing_envs+=("$env")
-        fi
-    done
-    
-    # Installer les environnements manquants
-    if [ ${#missing_envs[@]} -gt 0 ]; then
-        echo -e "${BLUE} Installation des environnements manquants...${NC}"
-        
-        for env in "${missing_envs[@]}"; do
-            install_env "$env"
-        done
-        
-        echo -e "${GREEN} Tous les environnements sont maintenant installés !${NC}"
-    else
-        echo -e "${GREEN} Tous les environnements sont déjà installés !${NC}"
-    fi
-}
-
+export PIPELINE_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 
 non_interactive=false
@@ -121,7 +45,7 @@ function load_user_config() {
         fi
 
         # Valeurs par défaut pour le cluster
-        partition="bigmem,bigmem-amd"
+        partition="bigmem-amd,bigmem"
         threads=16
 
         echo "  Paramètres utilisés :"
@@ -209,7 +133,7 @@ function execute_steps_with_dependencies() {
                     fi
                 fi
                
-                jobid_align=$(sbatch --partition="$partition" --cpus-per-task="$threads" --mem=128G \
+                jobid_align=$(sbatch --export=ALL --partition="$partition" --cpus-per-task="$threads" --mem=128G \
                     --output="logs/step1_align_%j.out" \
                     sbatch/step1_align.sbatch "$sample_name" "$threads" "$fastq_input" "$reference" | awk '{print $4}')
                
@@ -254,7 +178,7 @@ function execute_steps_with_dependencies() {
                     fi
                 fi
                
-                jobid_snps=$(sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+                jobid_snps=$(sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
                     --output="logs/step2_snps_%j.out" \
                     sbatch/step2_snps.sbatch "$sample_name" "$bam_to_use" "$reference" "$threads" "$bed_file" "$do_phasing" | awk '{print $4}')
                
@@ -285,7 +209,7 @@ function execute_steps_with_dependencies() {
                     fi
                 fi
                
-                jobid_svs=$(sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+                jobid_svs=$(sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
                     --output="logs/step3_svs_%j.out" \
                     sbatch/step3_svs.sbatch "$sample_name" "$bam_to_use" "$reference" "$threads" "$bed_file" | awk '{print $4}')
                
@@ -319,7 +243,7 @@ function execute_steps_with_dependencies() {
                     fi
                 fi
                
-                jobid_cnv=$(sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+                jobid_cnv=$(sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
                     --output="logs/step4_cnvkit_%j.out" \
                     sbatch/step4_cnvkit.sbatch "$sample_name" "$reference" "$threads" "$bed_file" "$bam_to_use" | awk '{print $4}')
                
@@ -357,7 +281,7 @@ function execute_steps_with_dependencies() {
                     fi
                 fi
                
-                jobid_methylation=$(sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+                jobid_methylation=$(sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
                     --output="logs/step5_methylation_%j.out" \
                     sbatch/step5_methylation.sbatch "$sample_name" "$reference" "$threads" "$region_file" "$modified_bam" | awk '{print $4}')
                
@@ -388,7 +312,7 @@ function execute_steps_with_dependencies() {
                     fi
                 fi
                
-                jobid_qc=$(sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+                jobid_qc=$(sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
                     --output="logs/step6_qc_%j.out" \
                     sbatch/step6_qc.sbatch "$sample_name" "$bam_to_use" "$threads" "$reference" "$bed_file" | awk '{print $4}')
                
@@ -419,7 +343,7 @@ function execute_steps_with_dependencies() {
                     fi
                 fi
                
-                jobid_annotation=$(sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+                jobid_annotation=$(sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
                     --output="logs/step7_annotation_%j.out" \
                     sbatch/step7_annotation.sbatch "$sample_name" "$vcf_to_use" "$threads" "$reference" | awk '{print $4}')
                
@@ -666,7 +590,7 @@ function run_alignment() {
 
 
        echo " Soumission SLURM pour l'alignement..."
-    sbatch --partition="$partition" --cpus-per-task="$threads" --mem=128G \
+    sbatch --export=ALL --partition="$partition" --cpus-per-task="$threads" --mem=128G \
         --output="logs/step1_align_%j.out" \
         sbatch/step1_align.sbatch "$sample_name" "$threads" "$fastq_input" "$reference"
 
@@ -771,7 +695,7 @@ function run_snps() {
     
     mkdir -p logs
     
-    jobid=$(sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+    jobid=$(sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
         --output="logs/step2_snps_%j.out" \
         sbatch/step2_snps.sbatch "$sample_name" "$bam_file" "$reference" "$threads" "$bed_file" "$do_phasing" | awk '{print $4}')
     
@@ -829,7 +753,7 @@ function run_annotation() {
     mkdir -p logs
     
     echo " Soumission SLURM de l'étape Annotation..."
-    sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+    sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
     --output="logs/step7_annotation_%j.out" \
     sbatch/step7_annotation.sbatch "$sample_name" "$vcf_file" "$threads" "$reference"
 
@@ -884,7 +808,7 @@ function run_svs() {
     echo " Étape 3 - Détection des SVs (Sniffles2 + CuteSV + SURVIVOR)"
     mkdir -p logs
 
-    sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+    sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
         --output="logs/step3_svs_%j.out" \
         sbatch/step3_svs.sbatch "$sample_name" "$bam_file" "$reference" "$threads" "$bed_file"  | awk '{print $4}'
 }
@@ -961,7 +885,7 @@ function run_cnvkit() {
 
     mkdir -p logs
 
-   jobid=$(sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+   jobid=$(sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
         --output="logs/step4_cnvkit_%j.out" \
         sbatch/step4_cnvkit.sbatch "$sample_name" "$reference" "$threads" "$bed_file" "$cnv_bam" | awk '{print $4}')
     
@@ -1006,7 +930,7 @@ function run_methylation() {
     mkdir -p logs
     echo " Soumission SLURM pour l'étape Méthylation..."
 
-    sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+    sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
         --output="logs/step5_methylation_%j.out" \
         sbatch/step5_methylation.sbatch "$sample_name" "$reference" "$threads" "$region_file" "$modified_bam"
 }
@@ -1056,7 +980,7 @@ function run_qc() {
 
 
     echo " Soumission SLURM de l'étape QC..."
-    sbatch $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+    sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
         --output="logs/step6_qc_%j.out" \
         sbatch/step6_qc.sbatch "$sample_name" "$bam_file" "$threads" "$reference" "$bed_file"
 }
@@ -1160,7 +1084,7 @@ while true; do
         
             # Étape 1 : alignement
                        echo "Soumission de l'étape Alignement..."
-            jobid_align=$(sbatch --partition="$partition" --cpus-per-task="$threads" --mem=128G \
+            jobid_align=$(sbatch --export=ALL --partition="$partition" --cpus-per-task="$threads" --mem=128G \
                 --output="logs/step1_align_%j.out" \
                 sbatch/step1_align.sbatch "$sample_name" "$threads" "$fastq_input" "$reference" | awk '{print $4}')
         
@@ -1186,19 +1110,19 @@ while true; do
 
             # Étape 2 : SNPs
             echo "Soumission de l'étape SNPs (dépend de l'alignement)..."
-            jobid_snps=$(sbatch --dependency=afterok:$jobid_align --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+            jobid_snps=$(sbatch --export=ALL --dependency=afterok:$jobid_align --partition="$partition" --cpus-per-task="$threads" --mem=256G \
             --output="logs/step2_snps_%j.out" \
             sbatch/step2_snps.sbatch "$sample_name" "$expected_bam" "$reference" "$threads" "$bed_file" "$do_phasing" | awk '{print $4}')
 
             # Étape 3 : SVs
             echo "Soumission de l'étape SVs (dépend de l'alignement)..."
-            jobid_svs=$(sbatch --dependency=afterok:$jobid_align --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+            jobid_svs=$(sbatch --export=ALL --dependency=afterok:$jobid_align --partition="$partition" --cpus-per-task="$threads" --mem=256G \
             --output="logs/step3_svs_%j.out" \
             sbatch/step3_svs.sbatch "$sample_name" "$expected_bam" "$reference" "$threads" "$bed_file" | awk '{print $4}')
 
             # Étape 4 : CNVkit (dépend de SVs)
             echo "Soumission de l'étape CNVkit (dépend de SVs)..."
-            jobid_cnv=$(sbatch --dependency=afterok:$jobid_svs --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+            jobid_cnv=$(sbatch --export=ALL --dependency=afterok:$jobid_svs --partition="$partition" --cpus-per-task="$threads" --mem=256G \
             --output="logs/step4_cnvkit_%j.out" \
             sbatch/step4_cnvkit.sbatch "$sample_name" "$reference" "$threads" "$bed_file" "$expected_bam" | awk '{print $4}')
 
@@ -1208,14 +1132,14 @@ while true; do
 
             # Étape 6 : Q_score
             echo "Soumission de l'étape QC (dépend de l'alignement)..."
-            jobid_qc=$(sbatch --dependency=afterok:$jobid_align --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+            jobid_qc=$(sbatch --export=ALL --dependency=afterok:$jobid_align --partition="$partition" --cpus-per-task="$threads" --mem=256G \
             --output="logs/step6_qc_%j.out" \
             sbatch/step6_qc.sbatch "$sample_name" "$expected_bam" "$threads" "$reference" "$bed_file" | awk '{print $4}')
 
             # Étape 7 : Annotation (VEP + Annovar)
             echo "Soumission de l'étape Annotation (dépend de SNPs)..."
             expected_vcf="results/${sample_name}/snps_clair3/merge_output.vcf.gz"
-            jobid_annotation=$(sbatch --dependency=afterok:$jobid_snps --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+            jobid_annotation=$(sbatch --export=ALL --dependency=afterok:$jobid_snps --partition="$partition" --cpus-per-task="$threads" --mem=256G \
             --output="logs/step6_annotation_%j.out" \
             sbatch/step7_annotation.sbatch "$sample_name" "$expected_vcf" "$threads" "$reference" | awk '{print $4}')
 
