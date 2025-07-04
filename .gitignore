@@ -13,9 +13,9 @@ miniconda*/
 setup.log
 logs/
 
-# Résultats et données de sortie
+# Résultats et données de sortie et input
 results/
-
+input/
 # Python (essentiel pour scripts bioinfo)
 __pycache__/
 *.py[cod]
