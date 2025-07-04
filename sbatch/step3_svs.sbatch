@@ -109,3 +109,5 @@ echo "$OUTDIR/cutesv.vcf"    >> "$VCF_LIST"
 
 SURVIVOR merge "$VCF_LIST" 1000 1 1 0 0 30 "$OUTDIR/final_SVs.vcf"
 echo "Fusion complète. Résultat : $OUTDIR/final_SVs.vcf"
+
+

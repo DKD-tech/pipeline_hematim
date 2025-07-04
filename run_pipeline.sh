@@ -37,7 +37,7 @@ function load_user_config() {
         echo " ➤ Fichier de config : $CONFIG_FILE"
     
         # Référence par défaut
-        reference="/users/dkdiakite/mes_jobs/input/hg38.fa"
+        reference="./input/hg38.fa"
         #  reference="/scratch/dkdiakite/data/test_data/wf-human-variation-demo/demo.fasta"
         if [[ ! -f "$reference" ]]; then
             echo " Référence $reference introuvable, vérifie le chemin dans le script."
@@ -189,10 +189,10 @@ function execute_steps_with_dependencies() {
                 fi
                 ;;
                
-            3) # SVs
-                echo " Étape 3 - Détection de SVs"
+           3) # SVs
+               echo " Étape 3 - Détection de SVs"
                
-                # Déterminer les dépendances
+            #   Déterminer les dépendances
                 local dep_opt=""
                 if [[ -n "$jobid_align" ]]; then
                     dep_opt="--dependency=afterok:$jobid_align"
@@ -218,8 +218,9 @@ function execute_steps_with_dependencies() {
                 else
                     echo "Erreur lors de la soumission des SVs"
                 fi
-                ;;
-               
+               ;;
+            
+
             4) # CNVkit
                 echo " Étape 4 - Détection de CNVs"
                
@@ -812,6 +813,188 @@ function run_svs() {
         --output="logs/step3_svs_%j.out" \
         sbatch/step3_svs.sbatch "$sample_name" "$bam_file" "$reference" "$threads" "$bed_file"  | awk '{print $4}'
 }
+
+# function run_svs() {
+#     load_user_config
+#     local dependency=$1
+#     local dep_opt=""
+#     [[ -n "$dependency" ]] && dep_opt="--dependency=afterok:$dependency"
+    
+#     # R�pertoire de mapping attendu
+#     mapping_dir="results/${sample_name}/mapping"
+    
+#     # === D�TECTION DES BAM DISPONIBLES ===
+#     bam_files=()
+    
+#     # Recherche de tous les BAM dans le r�pertoire de mapping
+#     if [[ -d "$mapping_dir" ]]; then
+#         for bam in "$mapping_dir"/*.bam; do
+#             [[ -f "$bam" ]] && bam_files+=("$bam")
+#         done
+#     fi
+    
+#     # Si aucun BAM trouv�, demander � l'utilisateur
+#     if [[ ${#bam_files[@]} -eq 0 ]]; then
+#         echo ""
+#         echo "  Aucun fichier BAM trouv� dans : $mapping_dir"
+#         read -p " Souhaitez-vous fournir un chemin BAM personnalis� ? (o/N) : " answer
+        
+#      #   if [[ "$answer" == "o" || "$answer" == "O" ]]; then
+#       #      read -p " Chemin complet du fichier BAM : " user_bam
+#        #     
+#         #    if [[ -f "$user_bam" ]]; then
+#          #       echo "Fichier BAM valide : $user_bam"
+#           #      bam_files+=("$user_bam")
+#            # else
+#             #    echo "Fichier introuvable : $user_bam"
+#              #   return 1
+#            # fi
+#             if [[ "$answer" == "o" || "$answer" == "O" ]]; then
+#             read -p " Chemin du fichier BAM, dossier, ou liste (s�par�s par virgules) : " user_input
+            
+#             # Traitement flexible de l'entr�e utilisateur
+#             user_bam_files=()
+            
+#             # Cas 1 : Dossier contenant des BAM
+#             if [[ -d "$user_input" ]]; then
+#                 echo "Dossier d�tect� : $user_input"
+#                 for bam in "$user_input"/*.bam; do
+#                     [[ -f "$bam" ]] && user_bam_files+=("$bam")
+#                 done
+                
+#             # Cas 2 : Liste de fichiers s�par�s par virgules
+#             elif [[ "$user_input" == *,* ]]; then
+#                 echo "Liste de fichiers d�tect�e"
+#                 IFS=',' read -ra bam_list <<< "$user_input"
+#                 for bam in "${bam_list[@]}"; do
+#                     bam=$(echo "$bam" | xargs)  # Supprime les espaces
+#                     if [[ -f "$bam" ]]; then
+#                         user_bam_files+=("$bam")
+#                     else
+#                         echo "Fichier introuvable : $bam"
+#                         return 1
+#                     fi
+#                 done
+                
+#             # Cas 3 : Fichier unique
+#             elif [[ -f "$user_input" ]]; then
+#                 echo "Fichier unique d�tect� : $user_input"
+#                 user_bam_files+=("$user_input")
+                
+#             else
+#                 echo "Chemin invalide : $user_input"
+#                 echo "V�rifiez que le fichier/dossier existe et est accessible"
+#                 return 1
+#             fi
+            
+#             # V�rification qu'au moins un BAM a �t� trouv�
+#             if [[ ${#user_bam_files[@]} -eq 0 ]]; then
+#                 echo "Aucun fichier BAM trouv� dans : $user_input"
+#                 return 1
+#             fi
+            
+#             # Ajout des BAM trouv�s � la liste principale
+#             echo "Fichiers BAM valides trouv�s : ${#user_bam_files[@]}"
+#             for bam in "${user_bam_files[@]}"; do
+#                 echo "  - $(basename "$bam")"
+#                 bam_files+=("$bam")
+#             done
+#         else
+#             echo " Annulation de l'�tape SVs."
+#             return 1
+#         fi
+#     fi
+    
+#     # === D�TECTION DU MODE (barcode ou fusion) ===
+#     contains_barcode="no"
+#     for bam in "${bam_files[@]}"; do
+#         if [[ "$(basename "$bam")" == *barcode* ]]; then
+#             contains_barcode="yes"
+#             break
+#         fi
+#     done
+    
+#     echo ""
+#     if [[ "$contains_barcode" == "yes" ]]; then
+#         echo "Mode barcode d�tect� : ${#bam_files[@]} fichiers BAM trouv�s"
+#         echo "Chaque barcode sera trait� s�par�ment"
+#     else
+#         echo "Mode fusion d�tect� : ${#bam_files[@]} fichier(s) BAM"
+#         echo "Traitement standard"
+#     fi
+    
+#     # === DEMANDE DU FICHIER BED (optionnel) ===
+#     read -p " Souhaitez-vous fournir un fichier BED pour restreindre les r�gions ? (o/N) : " answer
+#     if [[ "$answer" == "o" || "$answer" == "O" ]]; then
+#         read -p "Chemin du fichier BED : " bed_file
+#         if [[ ! -f "$bed_file" ]]; then
+#             echo " Fichier BED introuvable : $bed_file"
+#             echo "Continuation sans fichier BED"
+#             bed_file=""
+#         else
+#             echo "Fichier BED valide : $bed_file"
+#         fi
+#     else
+#         bed_file=""
+#     fi
+    
+#     # === SOUMISSION SLURM ===
+#     echo ""
+#     echo "Soumission de l'�tape SVs avec Sniffles2 + CuteSV + SURVIVOR..."
+#     mkdir -p logs
+    
+#     job_ids=()
+    
+#     for bam_file in "${bam_files[@]}"; do
+#         # Extraction du nom de base pour organiser les r�sultats
+#         bam_basename=$(basename "$bam_file")
+#         bam_basename=${bam_basename%.bam}
+        
+#         # D�finition du nom d'output selon le mode
+#         if [[ "$contains_barcode" == "yes" ]]; then
+#             # Mode barcode : r�sultats dans un sous-dossier par barcode
+#             output_suffix="_${bam_basename}"
+#             result_dir="results/$sample_name/svs/$bam_basename"
+#         else
+#             # Mode fusion : r�sultats directement dans le dossier principal
+#             output_suffix=""
+#             result_dir="results/$sample_name/svs"
+#         fi
+        
+#         echo "   ? Traitement : $bam_basename"
+#         echo "     - BAM : $bam_file"
+#         echo "     - R�f�rence : $reference"
+#         echo "     - Threads : $threads"
+#         echo "     - BED : ${bed_file:-'aucun'}"
+#         echo "     - R�sultats : $result_dir"
+        
+#         jobid=$(sbatch --export=ALL $dep_opt --partition="$partition" --cpus-per-task="$threads" --mem=256G \
+#             --output="logs/step3_svs${output_suffix}_%j.out" \
+#             sbatch/step3_svs.sbatch "$sample_name" "$bam_file" "$reference" "$threads" "$bed_file" "$bam_basename" | awk '{print $4}')
+        
+#         if [[ -n "$jobid" ]]; then
+#             job_ids+=("$jobid")
+#             echo "     - Job ID : $jobid"
+#         else
+#             echo "     - ERREUR lors de la soumission"
+#             return 1
+#         fi
+#         echo ""
+#     done
+    
+#     # === R�SUM� ===
+#     echo "Jobs SLURM soumis avec succ�s :"
+#     for i in "${!job_ids[@]}"; do
+#         bam_basename=$(basename "${bam_files[$i]}")
+#         bam_basename=${bam_basename%.bam}
+#         echo "   ? ${bam_basename} : Job ID ${job_ids[$i]}"
+#     done
+    
+#     echo ""
+#     echo "Logs disponibles dans : logs/step3_svs*.out"
+    
+#     return 0
+# }
 
 function run_cnvkit() {
     load_user_config
