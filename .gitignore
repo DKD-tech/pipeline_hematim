@@ -57,4 +57,4 @@ Thumbs.db
 .idea/
 
 # Conda general
-.conda/
+.conda/input/hg38.fa
